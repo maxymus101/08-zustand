@@ -1,4 +1,10 @@
 import css from "./LayoutNotes.module.css";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Notes Layout",
+  description: "List of your notes.",
+};
 
 type Props = {
   children: React.ReactNode;
