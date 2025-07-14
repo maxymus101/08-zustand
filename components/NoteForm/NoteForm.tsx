@@ -1,20 +1,14 @@
+"use client";
+
 import css from "./NoteForm.module.css";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  Formik,
-  Field,
-  Form,
-  ErrorMessage as FormikErrorMessage,
-} from "formik";
 import toast from "react-hot-toast";
 import * as Yup from "yup";
-import { type NoteTag, type Note } from "../../types/note";
+import { type NoteTag, type Note, NewNote } from "../../types/note";
 import { type NewNoteContent, createNote } from "../../lib/api";
-
-interface NoteFormProps {
-  onCancel: () => void; // Обробник для кнопки Cancel
-  onModalClose: () => void; // Пропс для закриття модального вікна після успішного сабміту
-}
+import { useRouter } from "next/navigation";
+import { useId, useState } from "react";
+import { useNoteDraftStore } from "../../lib/store/noteStore";
 
 // Схема валідації за допомогою Yup
 const validationSchema = Yup.object({
@@ -31,103 +25,134 @@ const validationSchema = Yup.object({
     .required("Tag is required"),
 });
 
-const initialValues: NewNoteContent = {
-  title: "",
-  content: "",
-  tag: "Personal", // Початкові значення за замовчуванням
-};
+export default function NoteForm() {
+  const [errors, setErrors] = useState<
+    Partial<Record<"title" | "content" | "tag", string>>
+  >({});
+  const fieldId = useId();
+  const { draft, setDraft, clearDraft } = useNoteDraftStore();
+  const queryClient = useQueryClient();
+  const router = useRouter();
 
-export default function NoteForm({ onCancel, onModalClose }: NoteFormProps) {
-  const queryClient = useQueryClient(); // Ініціалізуємо queryClient
+  const handleChange = (
+    event: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
+    setDraft({
+      ...draft,
+      [event.target.name]: event.target.value,
+    });
+  };
 
   // === useMutation для створення нової нотатки ===
   const createNoteMutation = useMutation<Note, Error, NewNoteContent>({
-    mutationFn: createNote, // Функція з noteService, яка виконує POST-запит
+    mutationFn: createNote,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notes"] }); // Інвалідуємо кеш запитів "notes"
-      toast.success("Note created successfully!"); // Повідомлення про успіх
-      onModalClose(); // Закриваємо модалку після успішного створення
+      clearDraft();
+      queryClient.invalidateQueries({ queryKey: ["notes"] });
+      toast.success("Note created successfully!");
     },
     onError: (error) => {
-      toast.error(`Error creating note: ${error.message}`); // Повідомлення про помилку
+      toast.error(`Error creating note: ${error.message}`);
     },
   });
 
+  async function handleSubmitForm(formData: FormData) {
+    try {
+      const note: NewNote = {
+        title: formData.get("title") as string,
+        content: formData.get("content") as string,
+        tag: formData.get("tag") as NewNote["tag"],
+      };
+
+      await validationSchema.validate(note, { abortEarly: false });
+      setErrors({});
+
+      createNoteMutation.mutate(note);
+    } catch (error: unknown) {
+      if (error instanceof Yup.ValidationError) {
+        const formattedErrors: Record<string, string> = {};
+        error.inner.forEach((err) => {
+          if (err.path) {
+            formattedErrors[err.path] = err.message;
+          }
+        });
+        setErrors(formattedErrors);
+      }
+    }
+  }
+
+  const handleCancelForm = () => {
+    router.back();
+  };
+
   return (
-    <Formik
-      initialValues={initialValues}
-      validationSchema={validationSchema}
-      onSubmit={(values, { resetForm }) => {
-        // Викликаємо мутацію створення нотатки
-        createNoteMutation.mutate(values);
-        // Formik автоматично встановлює isSubmitting в false після завершення onSubmit
-        // resetForm тут, щоб очистити форму, але це відбувається після мутації
-        resetForm();
-      }}
-    >
-      {() => (
-        <Form className={css.form}>
-          <div className={css.formGroup}>
-            <label htmlFor="title">Title</label>
-            <Field id="title" type="text" name="title" className={css.input} />
-            {/* FormikErrorMessage відображає помилку, якщо поле торкнулися і є помилка */}
-            <FormikErrorMessage
-              name="title"
-              component="span"
-              className={css.error}
-            />
-          </div>
+    <form className={css.form} action={handleSubmitForm}>
+      <div className={css.formGroup}>
+        <label htmlFor={`${fieldId}-title`}>Title</label>
+        <input
+          id={`${fieldId}-title`}
+          type="text"
+          name="title"
+          className={css.input}
+          defaultValue={draft?.title}
+          onChange={handleChange}
+        />
+        {(errors.title && <div className={css.error}>{errors.title}</div>) ||
+          "\u00A0"}
+      </div>
 
-          <div className={css.formGroup}>
-            <label htmlFor="content">Content</label>
-            <Field
-              as="textarea"
-              id="content"
-              name="content"
-              rows={8}
-              className={css.textarea}
-            />
-            <FormikErrorMessage
-              name="content"
-              component="span"
-              className={css.error}
-            />
-          </div>
+      <div className={css.formGroup}>
+        <label htmlFor={`${fieldId}-content`}>Content</label>
+        <textarea
+          id={`${fieldId}-content`}
+          name="content"
+          className={css.textarea}
+          defaultValue={draft?.content}
+          onChange={handleChange}
+        />
+        {(errors.content && (
+          <div className={css.error}>{errors.content}</div>
+        )) ||
+          "\u00A0"}
+      </div>
 
-          <div className={css.formGroup}>
-            <label htmlFor="tag">Tag</label>
-            <Field as="select" id="tag" name="tag" className={css.select}>
-              <option value="Todo">Todo</option>
-              <option value="Work">Work</option>
-              <option value="Personal">Personal</option>
-              <option value="Meeting">Meeting</option>
-              <option value="Shopping">Shopping</option>
-            </Field>
-            <FormikErrorMessage
-              name="tag"
-              component="span"
-              className={css.error}
-            />
-          </div>
+      <div className={css.formGroup}>
+        <label htmlFor={`${fieldId}-tag`}>Tag</label>
+        <select
+          id={`${fieldId}-tag`}
+          name="tag"
+          className={css.select}
+          defaultValue={draft?.tag}
+          onChange={handleChange}
+        >
+          <option value="Todo">Todo</option>
+          <option value="Work">Work</option>
+          <option value="Personal">Personal</option>
+          <option value="Meeting">Meeting</option>
+          <option value="Shopping">Shopping</option>
+          {(errors.tag && <div className={css.error}>{errors.tag}</div>) ||
+            "\u00A0"}
+        </select>
+      </div>
 
-          <div className={css.actions}>
-            <button
-              type="button"
-              className={css.cancelButton}
-              onClick={onCancel}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className={css.submitButton}
-              disabled={createNoteMutation.isPending} // Вимикаємо кнопку під час сабміту
-            >
-              Create note
-            </button>
-          </div>
-        </Form>
-      )}
-    </Formik>
+      <div className={css.actions}>
+        <button
+          type="button"
+          className={css.cancelButton}
+          onClick={handleCancelForm}
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          className={css.submitButton}
+          disabled={createNoteMutation.isPending}
+        >
+          Create note
+        </button>
+      </div>
+    </form>
   );
 }

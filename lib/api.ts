@@ -3,7 +3,7 @@ import type { NoteTag, Note } from "../types/note";
 
 export interface NewNoteContent {
   title: string;
-  content: string;
+  content?: string;
   tag: NoteTag;
 }
 

@@ -17,9 +17,8 @@ import { Note } from "../../../../types/note";
 import Pagination from "../../../../components/Pagination/Pagination";
 import NoteList from "../../../../components/NoteList/NoteList";
 import SearchBox from "../../../../components/SearchBox/SearchBox";
-import Modal from "../../../../components/Modal/Modal";
 import Loading from "../../../loading";
-import NoteForm from "../../../../components/NoteForm/NoteForm";
+import Link from "next/link";
 
 interface NotesClientProps {
   initialNotes: PaginatedNotesResponse;
@@ -27,13 +26,12 @@ interface NotesClientProps {
 }
 
 export default function NotesClient({ initialNotes, tag }: NotesClientProps) {
-  const queryClient = useQueryClient(); // useQueryClient тепер викликається в правильному контексті
+  const queryClient = useQueryClient();
 
   const [currentSearchQuery, setCurrentSearchQuery] = useState("");
   const [debouncedSearchQuery] = useDebounce(currentSearchQuery, 500);
 
   const [currentPage, setCurrentPage] = useState(initialNotes.page || 1); // Використовуємо початкову сторінку з SSR даних
-  const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -92,9 +90,7 @@ export default function NotesClient({ initialNotes, tag }: NotesClientProps) {
     setErrorMessage(null);
   };
 
-  // Функції для відкриття та закриття модального вікна створення нотатки.
-  const openCreateNoteModal = () => setIsNoteModalOpen(true);
-  const closeCreateNoteModal = () => setIsNoteModalOpen(false);
+  // Функції для відкриття та закриття вікна створення нотатки.
 
   // Функція для закриття повідомлення про помилку
   const handleCloseErrorMessage = () => {
@@ -119,9 +115,9 @@ export default function NotesClient({ initialNotes, tag }: NotesClientProps) {
           />
         )}
 
-        <button className={css.button} onClick={openCreateNoteModal}>
+        <Link href={"/notes/action/create"} className={css.button}>
           Create note +
-        </button>
+        </Link>
       </header>
 
       {(isLoading || isFetching) && <Loading />}
@@ -154,15 +150,6 @@ export default function NotesClient({ initialNotes, tag }: NotesClientProps) {
         )}
 
       <Toaster />
-
-      {isNoteModalOpen && (
-        <Modal onClose={closeCreateNoteModal}>
-          <NoteForm
-            onCancel={closeCreateNoteModal}
-            onModalClose={closeCreateNoteModal}
-          />
-        </Modal>
-      )}
     </div>
   );
 }
