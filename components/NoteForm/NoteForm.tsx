@@ -17,7 +17,7 @@ const validationSchema = Yup.object({
     .max(50, "Title must be at most 50 characters")
     .required("Title is required"),
   content: Yup.string().max(500, "Content must be at most 500 characters"),
-  tag: Yup.string<NoteTag>() // Вказуємо, що це тип NoteTag
+  tag: Yup.string<NoteTag>()
     .oneOf(
       ["Todo", "Work", "Personal", "Meeting", "Shopping"],
       "Invalid tag selected"
@@ -132,9 +132,9 @@ export default function NoteForm() {
           <option value="Personal">Personal</option>
           <option value="Meeting">Meeting</option>
           <option value="Shopping">Shopping</option>
-          {(errors.tag && <div className={css.error}>{errors.tag}</div>) ||
-            "\u00A0"}
         </select>
+        {(errors.tag && <div className={css.error}>{errors.tag}</div>) ||
+          "\u00A0"}
       </div>
 
       <div className={css.actions}>
