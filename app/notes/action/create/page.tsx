@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description: "Create your small reminder.",
   openGraph: {
     title: "Create your note",
-    description: "TCreate your small reminder.",
+    description: "Create your small reminder.",
     url: "https://08-zustand-fawn-six.vercel.app/notes/action/create",
     images: [
       {
@@ -24,7 +24,7 @@ export default function CreateNote() {
   return (
     <main className={css.main}>
       <div className={css.container}>
-        <h1 className={css.title}>Create note</h1>
+        <h2 className={css.title}>Create note</h2>
         <NoteForm />
       </div>
     </main>

@@ -18,7 +18,8 @@ export const metadata: Metadata = {
   description: "App for note creation.",
   openGraph: {
     title: "NoteHub",
-    description: "App for note creation.",
+    description:
+      "App for note creation. Create your note, put the tag, then easy filter by tag.",
     url: "https://08-zustand-fawn-six.vercel.app/",
     siteName: "NoteHub",
     images: [

@@ -15,7 +15,7 @@ export const metadata: Metadata = {
         url: "/page-note-found.jpeg",
         width: 1200,
         height: 630,
-        alt: `404 Page not found`,
+        alt: `Page that you was looking for is missing.`,
       },
     ],
     type: "article",

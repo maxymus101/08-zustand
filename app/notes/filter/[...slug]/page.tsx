@@ -11,7 +11,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const tag = slug[0] === "All" ? "All" : slug[0];
 
   const descriptionTag =
-    tag === "All" ? "All notes collection." : `Notes tagged with '${tag}.`;
+    tag === "All" ? "All notes collection." : `Notes tagged with <${tag}>.`;
 
   const tagUrl =
     tag === "All"

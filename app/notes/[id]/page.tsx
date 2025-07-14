@@ -21,9 +21,9 @@ export async function generateMetadata({
     title: `Note: ${note.title}`,
     description: note.content.slice(0, 30),
     openGraph: {
-      title: "Note: ${note.title}",
+      title: `Note: ${note.title}`,
       description: note.content.slice(0, 30),
-      url: "https://08-zustand-fawn-six.vercel.app/notes/filter/All",
+      url: `https://08-zustand-fawn-six.vercel.app/notes/filter/${note.id}`,
       siteName: "NoteHub",
       images: [
         {
