@@ -6,8 +6,8 @@ export const metadata: Metadata = {
   title: "404 Not-Found",
   description: "Page not found.",
   openGraph: {
-    title: "404 Not-Found",
-    description: "Page not found.",
+    title: "404 - Page Not Found",
+    description: "Page that you was looking for is missing.",
     url: "https://08-zustand-fawn-six.vercel.app/not-found",
     siteName: "NoteHub",
     images: [
@@ -15,7 +15,7 @@ export const metadata: Metadata = {
         url: "/page-note-found.jpeg",
         width: 1200,
         height: 630,
-        alt: `Page that you was looking for is missing.`,
+        alt: `Сторінка, яку ви шукали, відсутня. Переконайтеся, що сторінка вірна.`,
       },
     ],
     type: "article",

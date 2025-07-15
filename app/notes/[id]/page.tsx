@@ -19,10 +19,18 @@ export async function generateMetadata({
   const note = await fetchNoteById(Number(id));
   return {
     title: `Note: ${note.title}`,
-    description: note.content.slice(0, 30),
+    description: `${
+      note.content.length > 30
+        ? `${note.content.slice(0, 30)} ...`
+        : `${note.content}`
+    }`,
     openGraph: {
       title: `Note: ${note.title}`,
-      description: note.content.slice(0, 30),
+      description: `${
+        note.content.length > 30
+          ? `${note.content.slice(0, 30)} ...`
+          : `${note.content}`
+      }`,
       url: `https://08-zustand-fawn-six.vercel.app/notes/filter/${note.id}`,
       siteName: "NoteHub",
       images: [
